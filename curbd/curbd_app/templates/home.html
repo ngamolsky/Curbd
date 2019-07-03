@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+<p>This is the homepage!</p>
+<form action="{% url 'logout'%}" method="post">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>
+</body>
+</html>

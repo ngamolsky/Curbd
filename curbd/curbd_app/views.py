@@ -1,6 +1,9 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-# Create your views here.
-# Create your views here.
-def login(request):
-    return HttpResponse("You are seeing login page!")
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404, render
+
+
+def home(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('login/')
+    return render(request, 'home.html', {})
