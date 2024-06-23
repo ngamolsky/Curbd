@@ -1,0 +1,82 @@
+[
+  {
+    "prompt": "A vintage sofa for sale, Craigslist style photo, outdoor patio background, amateur photography",
+    "image_path": "craigslist_dataset/item_0.jpg"
+  },
+  {
+    "prompt": "A vintage chair for sale, Craigslist style photo, kitchen background, amateur photography",
+    "image_path": "craigslist_dataset/item_1.jpg"
+  },
+  {
+    "prompt": "A used sofa for sale, Craigslist style photo, garage background, amateur photography",
+    "image_path": "craigslist_dataset/item_2.jpg"
+  },
+  {
+    "prompt": "A well-worn sofa for sale, Craigslist style photo, living room background, amateur photography",
+    "image_path": "craigslist_dataset/item_3.jpg"
+  },
+  {
+    "prompt": "A slightly used microwave for sale, Craigslist style photo, garage background, amateur photography",
+    "image_path": "craigslist_dataset/item_4.jpg"
+  },
+  {
+    "prompt": "A used smartphone for sale, Craigslist style photo, outdoor patio background, amateur photography",
+    "image_path": "craigslist_dataset/item_5.jpg"
+  },
+  {
+    "prompt": "A slightly used guitar for sale, Craigslist style photo, garage background, amateur photography",
+    "image_path": "craigslist_dataset/item_6.jpg"
+  },
+  {
+    "prompt": "A used microwave for sale, Craigslist style photo, kitchen background, amateur photography",
+    "image_path": "craigslist_dataset/item_7.jpg"
+  },
+  {
+    "prompt": "A well-worn smartphone for sale, Craigslist style photo, garage background, amateur photography",
+    "image_path": "craigslist_dataset/item_8.jpg"
+  },
+  {
+    "prompt": "A used bicycle for sale, Craigslist style photo, outdoor patio background, amateur photography",
+    "image_path": "craigslist_dataset/item_9.jpg"
+  },
+  {
+    "prompt": "A slightly used bookshelf for sale, Craigslist style photo, kitchen background, amateur photography",
+    "image_path": "craigslist_dataset/item_10.jpg"
+  },
+  {
+    "prompt": "A slightly used guitar for sale, Craigslist style photo, bedroom background, amateur photography",
+    "image_path": "craigslist_dataset/item_11.jpg"
+  },
+  {
+    "prompt": "A slightly used microwave for sale, Craigslist style photo, garage background, amateur photography",
+    "image_path": "craigslist_dataset/item_12.jpg"
+  },
+  {
+    "prompt": "A slightly used smartphone for sale, Craigslist style photo, kitchen background, amateur photography",
+    "image_path": "craigslist_dataset/item_13.jpg"
+  },
+  {
+    "prompt": "A well-worn sofa for sale, Craigslist style photo, bedroom background, amateur photography",
+    "image_path": "craigslist_dataset/item_14.jpg"
+  },
+  {
+    "prompt": "A slightly used bicycle for sale, Craigslist style photo, bedroom background, amateur photography",
+    "image_path": "craigslist_dataset/item_15.jpg"
+  },
+  {
+    "prompt": "A used sofa for sale, Craigslist style photo, bedroom background, amateur photography",
+    "image_path": "craigslist_dataset/item_16.jpg"
+  },
+  {
+    "prompt": "A used bicycle for sale, Craigslist style photo, bedroom background, amateur photography",
+    "image_path": "craigslist_dataset/item_17.jpg"
+  },
+  {
+    "prompt": "A slightly used guitar for sale, Craigslist style photo, kitchen background, amateur photography",
+    "image_path": "craigslist_dataset/item_18.jpg"
+  },
+  {
+    "prompt": "A vintage sofa for sale, Craigslist style photo, living room background, amateur photography",
+    "image_path": "craigslist_dataset/item_19.jpg"
+  }
+]
