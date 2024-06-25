@@ -35,7 +35,7 @@ class PostGenerationService:
 
         self.post_generation_chain = self.post_prompt | self.llm
 
-    def generate_post(self, image_analysis_results: List[ImageAnalysisResult], user_input=None) -> Tuple[GeneratedPost, int]:
+    def generate_post(self, image_analysis_results: List[ImageAnalysisResult], user_input=None) -> Tuple[GeneratedPost, float]:
         # Combine image descriptions from all ImageAnalysisResult objects
         image_descriptions = "\n".join(
             [result.image_description for result in image_analysis_results])
@@ -46,7 +46,7 @@ class PostGenerationService:
                 "user_input": user_input
             })
 
-            return self.parser.parse(str(result.content)), cb.total_tokens
+            return self.parser.parse(str(result.content)), cb.total_cost
 
 
 class CurbdService:
@@ -63,11 +63,11 @@ class CurbdService:
             image_paths.append(temp_path)
         return image_paths
 
-    async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, int]:
+    async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, float]:
         image_analyses = await asyncio.gather(*[self.image_processor.process_image(path) for path in image_paths])
-        final_post, total_tokens = self.post_generator.generate_post(
+        final_post, total_cost = self.post_generator.generate_post(
             image_analyses, user_input)
-        return final_post, total_tokens
+        return final_post, total_cost
 
     async def cleanup_temp_files(self, image_paths: List[str]) -> None:
         for path in image_paths:

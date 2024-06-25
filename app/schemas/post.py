@@ -28,4 +28,4 @@ class PostGenerationResponse(BaseModel):
     post: GeneratedPost
     processing_time: float
     image_count: int
-    total_tokens: int
+    total_cost: float
