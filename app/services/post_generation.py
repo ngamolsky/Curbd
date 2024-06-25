@@ -35,13 +35,13 @@ class PostGenerationService:
 
         self.post_generation_chain = self.post_prompt | self.llm
 
-    def generate_post(self, image_analysis_results: List[ImageAnalysisResult], user_input=None) -> Tuple[GeneratedPost, float]:
+    async def generate_post(self, image_analysis_results: List[ImageAnalysisResult], user_input=None) -> Tuple[GeneratedPost, float]:
         # Combine image descriptions from all ImageAnalysisResult objects
         image_descriptions = "\n".join(
             [result.image_description for result in image_analysis_results])
 
         with get_openai_callback() as cb:
-            result = self.post_generation_chain.invoke({
+            result = await self.post_generation_chain.ainvoke({
                 "image_descriptions": image_descriptions,
                 "user_input": user_input
             })
@@ -63,11 +63,13 @@ class CurbdService:
             image_paths.append(temp_path)
         return image_paths
 
-    async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, float]:
+    async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, float, float]:
         image_analyses = await asyncio.gather(*[self.image_processor.process_image(path) for path in image_paths])
-        final_post, total_cost = self.post_generator.generate_post(
+        image_processing_cost = sum([cost for _, cost in image_analyses])
+        image_analyses = [result for result, _ in image_analyses]
+        final_post, post_generation_cost = await self.post_generator.generate_post(
             image_analyses, user_input)
-        return final_post, total_cost
+        return final_post, image_processing_cost, post_generation_cost
 
     async def cleanup_temp_files(self, image_paths: List[str]) -> None:
         for path in image_paths:

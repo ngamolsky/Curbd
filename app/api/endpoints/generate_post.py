@@ -10,7 +10,7 @@ router = APIRouter()
 curbd_service = CurbdService()
 
 
-@router.post("/generate-post/", response_model=PostGenerationResponse)
+@router.post("/generate-post/", response_model=PostGenerationResponse, )
 async def generate_post(
     images: List[UploadFile] = File(...),
     user_input: Optional[str] = Form(None),
@@ -20,7 +20,7 @@ async def generate_post(
     image_paths = await curbd_service.save_uploaded_images(images)
 
     start_time = time.time()
-    generated_post, total_cost = await curbd_service.process_images_and_generate_post(image_paths, user_input if user_input else None)
+    generated_post, image_cost, post_cost = await curbd_service.process_images_and_generate_post(image_paths, user_input if user_input else None)
     processing_time = time.time() - start_time
 
     await curbd_service.cleanup_temp_files(image_paths)
@@ -29,5 +29,7 @@ async def generate_post(
         post=generated_post,
         processing_time=processing_time,
         image_count=len(images),
-        total_cost=total_cost
+        image_processing_cost=image_cost,
+        post_generation_cost=post_cost,
+        total_cost=image_cost + post_cost
     )

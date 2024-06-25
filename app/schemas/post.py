@@ -1,10 +1,6 @@
+from fastapi import UploadFile
 from pydantic import BaseModel, Field
 from typing import List, Optional
-
-
-class UserInput(BaseModel):
-    prompt_modification: Optional[str] = Field(
-        None, description="Modifications to the prompt")
 
 
 class GeneratedPost(BaseModel):
@@ -20,8 +16,8 @@ class ImageMetadata(BaseModel):
 
 
 class PostGenerationRequest(BaseModel):
-    user_input: Optional[UserInput] = None
-    images: List[ImageMetadata]
+    user_input: Optional[str] = None
+    images: List[UploadFile]
 
 
 class PostGenerationResponse(BaseModel):
@@ -29,3 +25,5 @@ class PostGenerationResponse(BaseModel):
     processing_time: float
     image_count: int
     total_cost: float
+    image_processing_cost: float
+    post_generation_cost: float

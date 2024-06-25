@@ -6,6 +6,8 @@ import base64
 from PIL import Image
 from io import BytesIO
 import aiofiles
+from typing import Tuple
+from langchain_community.callbacks import get_openai_callback
 
 
 class OpenAIVisionProcessor:
@@ -24,7 +26,7 @@ class OpenAIVisionProcessor:
             image.save(buffered, format="PNG")
             return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
-    async def process_image(self, image_path: str) -> ImageAnalysisResult:
+    async def process_image(self, image_path: str) -> Tuple[ImageAnalysisResult, float]:
         base64_image = await self.encode_image(image_path)
 
         human_message = HumanMessage(
@@ -41,13 +43,16 @@ class OpenAIVisionProcessor:
                 }
             ]
         )
-        ai_message = await self.chat_model.ainvoke([human_message])
-        return self.parser.parse(str(ai_message.content))
+
+        with get_openai_callback() as callback:
+            ai_message = await self.chat_model.ainvoke([human_message])
+            return self.parser.parse(str(ai_message.content)), callback.total_cost
 
 
 class ImageProcessingModule:
     def __init__(self, vision_processor):
         self.vision_processor = vision_processor
 
-    async def process_image(self, image_path: str) -> ImageAnalysisResult:
-        return await self.vision_processor.process_image(image_path)
+    async def process_image(self, image_path: str) -> Tuple[ImageAnalysisResult, float]:
+        res = await self.vision_processor.process_image(image_path)
+        return res
