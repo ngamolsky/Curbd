@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # OpenAI settings
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
 
-    TEMP_API_KEY: str = "test"
+    API_KEY: str | None = os.getenv("API_KEY")
 
     # Temporary file storage
     TEMP_FILE_DIR: str = "/tmp"
