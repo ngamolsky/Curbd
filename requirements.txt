@@ -6,8 +6,9 @@ pydantic
 pydantic-settings
 pillow
 langchain
-openai
 langchain-openai
+langchain-community
+openai
 numpy
 sqlalchemy
 aiohttp
