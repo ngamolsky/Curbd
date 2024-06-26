@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from app.api.endpoints import generate_post
-from app.core.config import settings
+from app.core.config import get_settings
+
+settings = get_settings()
 
 app = FastAPI(title=settings.PROJECT_NAME)
 

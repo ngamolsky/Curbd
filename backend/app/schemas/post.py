@@ -22,7 +22,6 @@ class PostGenerationRequest(BaseModel):
 
 class PostGenerationResponse(BaseModel):
     post: GeneratedPost
-    processing_time: float
     image_count: int
     total_cost: float
     image_processing_cost: float
