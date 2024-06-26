@@ -34,11 +34,19 @@ class OpenAIVisionProcessor:
 
         async with aiofiles.open(image_path, mode='rb') as image_file:
             image_data = await image_file.read()
+            # Log image size
+            logger.info(
+                f"Image size: {len(image_data) / (1024 * 1024):.2f} MB")
             image = Image.open(BytesIO(image_data))
             buffered = BytesIO()
             image.save(buffered, format="PNG")
+
+            encoding_start = time.time()
             encoded_image = base64.b64encode(
                 buffered.getvalue()).decode('utf-8')
+            encoding_duration = time.time() - encoding_start
+            logger.info(
+                f"Base64 encoding completed in {encoding_duration:.2f} seconds")
 
         return encoded_image
 
