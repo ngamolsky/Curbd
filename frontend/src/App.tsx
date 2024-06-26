@@ -64,6 +64,13 @@ function App() {
     setIsLoading(false);
   };
 
+  const handleReset = () => {
+    setImages([]);
+    setUserInput("");
+    setThumbnails([]);
+    setGeneratedPost(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-start p-4">
       <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center text-gray-800 dark:text-white">
@@ -171,7 +178,7 @@ function App() {
           <p className="text-gray-600 dark:text-gray-300 mb-4">
             {generatedPost.description}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-4">
             {generatedPost.hashtags.map((hashtag, index) => (
               <span
                 key={index}
@@ -181,6 +188,12 @@ function App() {
               </span>
             ))}
           </div>
+          <button
+            onClick={handleReset}
+            className="w-full py-3 px-4 rounded-md text-base font-medium bg-gray-500 text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-300 ease-in-out"
+          >
+            Reset
+          </button>
         </div>
       )}
     </div>
