@@ -1,5 +1,6 @@
 import asyncio
 import aiofiles
+import logging
 from fastapi import UploadFile
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
@@ -13,6 +14,11 @@ from typing import List, Tuple, Optional, Dict
 import os
 from PIL import Image
 from io import BytesIO
+import time
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class PostGenerationService:
@@ -43,11 +49,18 @@ class PostGenerationService:
         image_descriptions = "\n".join(
             [result.image_description for result in image_analysis_results])
 
+        logger.info(
+            f"Generating post with image descriptions: {image_descriptions}")
+        logger.info(f"User input: {user_input}")
+
         with get_openai_callback() as cb:
             result = await self.post_generation_chain.ainvoke({
                 "image_descriptions": image_descriptions,
                 "user_input": user_input
             })
+
+            logger.info(f"Generated post content: {result.content}")
+            logger.info(f"Post generation cost: {cb.total_cost}")
 
             return self.parser.parse(str(result.content)), cb.total_cost
 
@@ -63,7 +76,8 @@ class CurbdService:
             content = await image.read()
             img = Image.open(BytesIO(content))
 
-            print(f"Initial image format: {image.content_type}")
+            logger.info(f"Processing image: {image.filename}")
+            logger.info(f"Initial image format: {image.content_type}")
             # Check and convert file type if necessary
             if image.content_type not in ["image/png", "image/webp"]:
                 img = img.convert("RGB")
@@ -78,15 +92,20 @@ class CurbdService:
 
             # Log the initial file size
             initial_size = len(compressed_content)
-            print(f"Initial file size: {initial_size / (1024 * 1024):.2f} MB")
-            print(f"Initial image size: {img.size}")
+            logger.info(
+                f"Initial file size: {initial_size / (1024 * 1024):.2f} MB")
+            logger.info(f"Initial image size: {img.size}")
 
-            while len(compressed_content) > 20 * 1024 * 1024:  # 20MB in bytes
+            while len(compressed_content) > 4 * 1024 * 1024:  # 20MB in bytes
                 output = BytesIO()
                 img = img.resize((int(img.width * 0.9), int(img.height * 0.9)))
                 img.save(output, format=output_format,
                          optimize=True, quality=85)
                 compressed_content = output.getvalue()
+
+            logger.info(f"Final image size: {img.size}")
+            logger.info(
+                f"Final file size: {len(compressed_content) / (1024 * 1024):.2f} MB")
 
             # Save the image
             temp_path = f"/tmp/{image.filename}"
@@ -96,7 +115,6 @@ class CurbdService:
         return image_paths
 
     async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, float, float, Dict[str, float]]:
-        import time
 
         timing_info = {}
 
@@ -108,6 +126,12 @@ class CurbdService:
         image_processing_cost = sum([cost for _, cost in image_analyses])
         image_analyses = [result for result, _ in image_analyses]
 
+        logger.info(
+            f"Image processing completed in {image_processing_time:.2f} seconds")
+        logger.info(f"Image processing cost: {image_processing_cost}")
+        for i, analysis in enumerate(image_analyses):
+            logger.info(f"Image {i+1} analysis result: {analysis}")
+
         start_time = time.time()
         final_post, post_generation_cost = await self.post_generator.generate_post(
             image_analyses, user_input)
@@ -116,8 +140,14 @@ class CurbdService:
 
         timing_info['total'] = image_processing_time + post_generation_time
 
+        logger.info(
+            f"Post generation completed in {post_generation_time:.2f} seconds")
+        logger.info(f"Post generation cost: {post_generation_cost}")
+        logger.info(f"Generated post: {final_post}")
+
         return final_post, image_processing_cost, post_generation_cost, timing_info
 
     async def cleanup_temp_files(self, image_paths: List[str]) -> None:
         for path in image_paths:
             os.remove(path)
+            logger.info(f"Removed temporary file: {path}")

@@ -10,13 +10,12 @@ router = APIRouter()
 curbd_service = CurbdService()
 
 
-@router.post("/generate-post/", response_model=PostGenerationResponse)
+@router.post("/generate-post/", response_model=PostGenerationResponse, operation_id="GeneratePost")
 async def generate_post(
     images: Annotated[List[UploadFile], File()],
     user_input: Annotated[str | None, Form()] = None,
     _: str = Depends(get_api_key)
 ):
-
     image_paths = await curbd_service.save_uploaded_images(images)
 
     start_time = time.time()
