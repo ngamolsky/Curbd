@@ -20,6 +20,8 @@ class ImageAnalysisResult(BaseModel):
     dominant_colors: List[str]
     image_description: str
     additional_attributes: Optional[dict] = None
+    brand: Optional[str] = None
+    main_object: Optional[str] = None
 
 
 class CombinedAnalysisResult(BaseModel):
