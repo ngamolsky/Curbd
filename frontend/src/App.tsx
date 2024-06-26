@@ -128,9 +128,9 @@ function App() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-3 px-4 rounded-md text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:scale-105 ${
+            className={`w-full py-3 px-4 rounded-md text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out ${
               isLoading
-                ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                ? "bg-blue-300 text-white cursor-not-allowed"
                 : "bg-blue-500 text-white hover:bg-blue-600"
             }`}
           >
