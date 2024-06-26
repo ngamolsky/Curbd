@@ -11,6 +11,8 @@ from app.schemas.post import GeneratedPost
 from app.services.image_processing import ImageProcessingModule, OpenAIVisionProcessor
 from typing import List, Tuple, Optional
 import os
+from PIL import Image
+from io import BytesIO
 
 
 class PostGenerationService:
@@ -57,9 +59,32 @@ class CurbdService:
     async def save_uploaded_images(self, images: List[UploadFile]) -> List[str]:
         image_paths = []
         for image in images:
+            content = await image.read()
+            img = Image.open(BytesIO(content))
+
+            # Check and convert file type if necessary
+            if image.content_type not in ["image/png", "image/webp"]:
+                img = img.convert("RGB")
+                output_format = "PNG"
+            else:
+                output_format = image.content_type.split("/")[1].upper()
+
+            # Compress if larger than 20MB
+            output = BytesIO()
+            img.save(output, format=output_format, optimize=True, quality=85)
+            compressed_content = output.getvalue()
+
+            while len(compressed_content) > 20 * 1024 * 1024:  # 20MB in bytes
+                output = BytesIO()
+                img = img.resize((int(img.width * 0.9), int(img.height * 0.9)))
+                img.save(output, format=output_format,
+                         optimize=True, quality=85)
+                compressed_content = output.getvalue()
+
+            # Save the image
             temp_path = f"/tmp/{image.filename}"
             async with aiofiles.open(temp_path, "wb") as buffer:
-                await buffer.write(await image.read())
+                await buffer.write(compressed_content)
             image_paths.append(temp_path)
         return image_paths
 

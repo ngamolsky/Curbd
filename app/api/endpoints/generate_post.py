@@ -4,16 +4,16 @@ from app.schemas.post import PostGenerationResponse
 from app.services.post_generation import CurbdService
 from app.core.security import get_api_key
 import time
-from typing import Optional
+from typing import Optional, Annotated
 
 router = APIRouter()
 curbd_service = CurbdService()
 
 
-@router.post("/generate-post/", response_model=PostGenerationResponse, )
+@router.post("/generate-post/", response_model=PostGenerationResponse)
 async def generate_post(
-    images: List[UploadFile] = File(...),
-    user_input: Optional[str] = Form(None),
+    images: Annotated[List[UploadFile], File()],
+    user_input: Annotated[Optional[str], Form()],
     _: str = Depends(get_api_key)
 ):
 
