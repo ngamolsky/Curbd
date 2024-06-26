@@ -2,7 +2,7 @@ import { useState, ChangeEvent } from "react";
 import { compressImage } from "./utils/imageCompression";
 import { OpenAPI, generatePost } from "./client";
 
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB in bytes
+const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB in bytes
 const BASE_API_URL =
   import.meta.env.DEV === true
     ? "http://localhost:8000"
