@@ -1,6 +1,6 @@
 from fastapi import UploadFile
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import List, Optional, Dict
 
 
 class GeneratedPost(BaseModel):
@@ -27,3 +27,4 @@ class PostGenerationResponse(BaseModel):
     total_cost: float
     image_processing_cost: float
     post_generation_cost: float
+    timing_info: Dict[str, float]

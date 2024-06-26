@@ -20,7 +20,7 @@ async def generate_post(
     image_paths = await curbd_service.save_uploaded_images(images)
 
     start_time = time.time()
-    generated_post, image_cost, post_cost = await curbd_service.process_images_and_generate_post(image_paths, user_input if user_input else None)
+    generated_post, image_cost, post_cost, timing_info = await curbd_service.process_images_and_generate_post(image_paths, user_input if user_input else None)
     processing_time = time.time() - start_time
 
     await curbd_service.cleanup_temp_files(image_paths)
@@ -31,5 +31,6 @@ async def generate_post(
         image_count=len(images),
         image_processing_cost=image_cost,
         post_generation_cost=post_cost,
-        total_cost=image_cost + post_cost
+        total_cost=image_cost + post_cost,
+        timing_info=timing_info
     )

@@ -9,7 +9,7 @@ from langchain_community.callbacks import get_openai_callback
 
 from app.schemas.post import GeneratedPost
 from app.services.image_processing import ImageProcessingModule, OpenAIVisionProcessor
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 import os
 from PIL import Image
 from io import BytesIO
@@ -89,13 +89,28 @@ class CurbdService:
             image_paths.append(temp_path)
         return image_paths
 
-    async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, float, float]:
+    async def process_images_and_generate_post(self, image_paths: List[str], user_input: Optional[str] = None) -> Tuple[GeneratedPost, float, float, Dict[str, float]]:
+        import time
+
+        timing_info = {}
+
+        start_time = time.time()
         image_analyses = await asyncio.gather(*[self.image_processor.process_image(path) for path in image_paths])
+        image_processing_time = time.time() - start_time
+        timing_info['image_processing'] = image_processing_time
+
         image_processing_cost = sum([cost for _, cost in image_analyses])
         image_analyses = [result for result, _ in image_analyses]
+
+        start_time = time.time()
         final_post, post_generation_cost = await self.post_generator.generate_post(
             image_analyses, user_input)
-        return final_post, image_processing_cost, post_generation_cost
+        post_generation_time = time.time() - start_time
+        timing_info['post_generation'] = post_generation_time
+
+        timing_info['total'] = image_processing_time + post_generation_time
+
+        return final_post, image_processing_cost, post_generation_cost, timing_info
 
     async def cleanup_temp_files(self, image_paths: List[str]) -> None:
         for path in image_paths:
