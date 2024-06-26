@@ -63,6 +63,7 @@ class CurbdService:
             content = await image.read()
             img = Image.open(BytesIO(content))
 
+            print(f"Initial image format: {image.content_type}")
             # Check and convert file type if necessary
             if image.content_type not in ["image/png", "image/webp"]:
                 img = img.convert("RGB")
@@ -74,6 +75,11 @@ class CurbdService:
             output = BytesIO()
             img.save(output, format=output_format, optimize=True, quality=85)
             compressed_content = output.getvalue()
+
+            # Log the initial file size
+            initial_size = len(compressed_content)
+            print(f"Initial file size: {initial_size / (1024 * 1024):.2f} MB")
+            print(f"Initial image size: {img.size}")
 
             while len(compressed_content) > 20 * 1024 * 1024:  # 20MB in bytes
                 output = BytesIO()
