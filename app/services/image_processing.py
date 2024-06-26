@@ -14,7 +14,8 @@ class OpenAIVisionProcessor:
     def __init__(self):
         self.chat_model = ChatOpenAI(
             model="gpt-4o",
-            max_tokens=1000
+            max_tokens=1000,
+            verbose=True
         )
         self.parser = PydanticOutputParser(pydantic_object=ImageAnalysisResult)
 

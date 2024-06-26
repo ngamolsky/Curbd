@@ -17,7 +17,8 @@ from io import BytesIO
 
 class PostGenerationService:
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo",
+                              temperature=0.7, verbose=True)
         self.parser = PydanticOutputParser(pydantic_object=GeneratedPost)
 
         self.post_prompt = PromptTemplate.from_template(
