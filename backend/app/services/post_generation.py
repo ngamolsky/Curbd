@@ -39,7 +39,7 @@ class PostGenerationService:
     async def generate_post(self, image_analysis_results: List[ImageAnalysisResult], user_input=None) -> Tuple[GeneratedPost, float]:
         # Combine image descriptions from all ImageAnalysisResult objects
         image_descriptions = "\n".join(
-            [result.image_description for result in image_analysis_results])
+            [str(result) for result in image_analysis_results])
 
         logger.info(
             f"Generating post with image descriptions: {image_descriptions}")

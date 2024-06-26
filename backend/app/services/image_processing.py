@@ -31,20 +31,14 @@ class OpenAIVisionProcessor:
         self.parser = PydanticOutputParser(pydantic_object=ImageAnalysisResult)
 
     async def encode_image(self, image_path):
-        logger.info(f"Starting image encoding for {image_path}")
-        start_time = time.time()
 
         async with aiofiles.open(image_path, mode='rb') as image_file:
-            logger.info(f"Reading image file: {image_path}")
             image_data = await image_file.read()
             image = Image.open(BytesIO(image_data))
             buffered = BytesIO()
             image.save(buffered, format="PNG")
             encoded_image = base64.b64encode(
                 buffered.getvalue()).decode('utf-8')
-
-        encoding_time = time.time() - start_time
-        logger.info(f"Image encoding completed in {encoding_time:.2f} seconds")
 
         return encoded_image
 
@@ -56,7 +50,8 @@ class OpenAIVisionProcessor:
         encoding_start = time.time()
         base64_image = await self.encode_image(image_path)
         encoding_time = time.time() - encoding_start
-        logger.info(f"Image encoding completed in {encoding_time:.2f} seconds")
+        logger.info(
+            f"Image encoding completed in {encoding_time:.2f} seconds")
 
         human_message = HumanMessage(
             content=[
