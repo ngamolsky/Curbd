@@ -12,7 +12,6 @@ import uuid
 import os
 import aiofiles
 from app.core.config import get_settings
-from langsmith import traceable
 import base64
 
 # Configure logging
@@ -54,27 +53,28 @@ class PostGenerationService:
                     {
                         "type": "text",
                         "text":  "Carefully analyze the following image(s) and optional user input:\n"
-                        "User input: {user_input}\n\n"
+                        f"User input: {user_input}\n\n"
                         "Based on this information, accurately identify the item(s) present in the image(s) and generate a post for giving them away for free. Your response should be a GeneratedPost object with the following attributes:\n"
                         "1. title: An engaging and concise title that grabs attention and clearly conveys what's being offered, based on your accurate analysis of the image(s).\n"
                         "2. description: A compelling description that provides detailed information about the item(s) you've identified, including their appearance, condition, and any relevant details visible in the image(s). Keep it friendly and appealing to potential takers.\n"
                         "3. hashtags: A list of 3-5 hashtags that will help the post reach interested people. Include general and specific tags related to the item(s) you've identified and free giveaways.\n"
                         "If user input is provided, incorporate it appropriately into the generated content, ensuring it enhances the title, description, or hashtags as needed, while still maintaining accuracy based on what you see in the image(s).\n\n"
                         "Ensure that your analysis of the image(s) is thorough and that you only include items that are clearly visible and intended for giveaway. Do not make assumptions about items that aren't clearly present in the image(s).\n\n"
-                        f"Format the output according to these instructions: {self.parser.get_format_instructions()}\n",
+                        "Format the output according to these instructions: {format_instructions}\n",
                     },
                     *image_dicts
                 ]
             )
 
             template = ChatPromptTemplate.from_messages([human_message])
+            template.format(user_input=user_input)
 
             chain = template | self.llm | self.parser
 
             result = await chain.ainvoke(
                 input={
                     "user_input": user_input,
-                    "images": base64_images
+                    "format_instructions": self.parser.get_format_instructions()
                 }
             )
 
