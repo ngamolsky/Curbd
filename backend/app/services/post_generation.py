@@ -12,6 +12,8 @@ import uuid
 import os
 import aiofiles
 from app.core.config import get_settings
+from langsmith import traceable
+import base64
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +29,7 @@ class PostGenerationService:
         self.parser = PydanticOutputParser(pydantic_object=GeneratedPost)
 
         self.post_prompt = PromptTemplate.from_template(
-            "Carefully analyze the following image(s) and optional user input:\n"
+            "!!!Carefully analyze the following image(s) and optional user input:\n"
             "Image(s): {images}\n"
             "User input: {user_input}\n\n"
             "Based on this information, accurately identify the item(s) present in the image(s) and generate a post for giving them away for free. Your response should be a GeneratedPost object with the following attributes:\n"
@@ -44,15 +46,27 @@ class PostGenerationService:
 
         self.post_generation_chain = self.post_prompt | self.llm
 
+    @traceable
     async def generate_post(self, image_paths: List[str], user_input=None) -> Tuple[GeneratedPost, float]:
 
         logger.info(
             f"Generating post for images: {image_paths}")
         logger.info(f"User input: {user_input}")
 
+        # Convert image paths to base64 encoded strings
+        base64_images = []
+        for image_path in image_paths:
+            with open(image_path, "rb") as image_file:
+                encoded_string = base64.b64encode(
+                    image_file.read()).decode('utf-8')
+                base64_images.append(f"data:image/png;base64,{encoded_string}")
+
+        # Replace image_paths with base64_images in the chain invocation
+
+        logger.info(f"Base64 images: {base64_images}")
         with get_openai_callback() as cb:
             result = await self.post_generation_chain.ainvoke({
-                "images": image_paths,
+                "images": base64_images,
                 "user_input": user_input
             })
 

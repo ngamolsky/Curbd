@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
     API_KEY: str | None = os.getenv("API_KEY")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL") or ""
+    LANGCHAIN_API_KEY: str | None = os.getenv("LANGCHAIN_API_KEY")
+    LANGCHAIN_TRACING_V2: bool = os.getenv("LANGCHAIN_TRACING_V2") == "true"
 
     # Temporary file storage
     TEMP_FILE_DIR: str = "/tmp"
