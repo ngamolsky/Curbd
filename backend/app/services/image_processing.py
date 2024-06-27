@@ -6,13 +6,12 @@ import base64
 from PIL import Image
 from io import BytesIO
 import aiofiles
-from typing import Tuple, Optional, List, Dict
+from typing import Tuple, List
 from langchain_community.callbacks import get_openai_callback
 from fastapi import UploadFile
 import logging
 import time
 import os
-import asyncio
 import uuid
 from app.core.config import get_settings
 
