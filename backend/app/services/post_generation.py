@@ -1,9 +1,9 @@
 import logging
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_community.callbacks import get_openai_callback
-
+from langchain_core.messages import HumanMessage
 from app.schemas.post import GeneratedPost
 from typing import List, Tuple
 from fastapi import UploadFile
@@ -28,25 +28,6 @@ class PostGenerationService:
                               temperature=0.7, verbose=True)
         self.parser = PydanticOutputParser(pydantic_object=GeneratedPost)
 
-        self.post_prompt = PromptTemplate.from_template(
-            "!!!Carefully analyze the following image(s) and optional user input:\n"
-            "Image(s): {images}\n"
-            "User input: {user_input}\n\n"
-            "Based on this information, accurately identify the item(s) present in the image(s) and generate a post for giving them away for free. Your response should be a GeneratedPost object with the following attributes:\n"
-            "1. title: An engaging and concise title that grabs attention and clearly conveys what's being offered, based on your accurate analysis of the image(s).\n"
-            "2. description: A compelling description that provides detailed information about the item(s) you've identified, including their appearance, condition, and any relevant details visible in the image(s). Keep it friendly and appealing to potential takers.\n"
-            "3. hashtags: A list of 3-5 hashtags that will help the post reach interested people. Include general and specific tags related to the item(s) you've identified and free giveaways.\n"
-            "If user input is provided, incorporate it appropriately into the generated content, ensuring it enhances the title, description, or hashtags as needed, while still maintaining accuracy based on what you see in the image(s).\n\n"
-            "Ensure that your analysis of the image(s) is thorough and that you only include items that are clearly visible and intended for giveaway. Do not make assumptions about items that aren't clearly present in the image(s).\n\n"
-            "Format the output according to these instructions: {format_instructions}\n",
-            partial_variables={
-                "format_instructions": self.parser.get_format_instructions()
-            }
-        )
-
-        self.post_generation_chain = self.post_prompt | self.llm
-
-    @traceable
     async def generate_post(self, image_paths: List[str], user_input=None) -> Tuple[GeneratedPost, float]:
 
         logger.info(
@@ -63,17 +44,44 @@ class PostGenerationService:
 
         # Replace image_paths with base64_images in the chain invocation
 
-        logger.info(f"Base64 images: {base64_images}")
         with get_openai_callback() as cb:
-            result = await self.post_generation_chain.ainvoke({
-                "images": base64_images,
-                "user_input": user_input
-            })
 
-            logger.info(f"Generated post content: {result.content}")
+            image_dicts = [{"type": "image_url", "image_url": {
+                "url": base64_image}} for base64_image in base64_images]
+
+            human_message = HumanMessage(
+                content=[
+                    {
+                        "type": "text",
+                        "text":  "Carefully analyze the following image(s) and optional user input:\n"
+                        "User input: {user_input}\n\n"
+                        "Based on this information, accurately identify the item(s) present in the image(s) and generate a post for giving them away for free. Your response should be a GeneratedPost object with the following attributes:\n"
+                        "1. title: An engaging and concise title that grabs attention and clearly conveys what's being offered, based on your accurate analysis of the image(s).\n"
+                        "2. description: A compelling description that provides detailed information about the item(s) you've identified, including their appearance, condition, and any relevant details visible in the image(s). Keep it friendly and appealing to potential takers.\n"
+                        "3. hashtags: A list of 3-5 hashtags that will help the post reach interested people. Include general and specific tags related to the item(s) you've identified and free giveaways.\n"
+                        "If user input is provided, incorporate it appropriately into the generated content, ensuring it enhances the title, description, or hashtags as needed, while still maintaining accuracy based on what you see in the image(s).\n\n"
+                        "Ensure that your analysis of the image(s) is thorough and that you only include items that are clearly visible and intended for giveaway. Do not make assumptions about items that aren't clearly present in the image(s).\n\n"
+                        f"Format the output according to these instructions: {self.parser.get_format_instructions()}\n",
+                    },
+                    *image_dicts
+                ]
+            )
+
+            template = ChatPromptTemplate.from_messages([human_message])
+
+            chain = template | self.llm | self.parser
+
+            result = await chain.ainvoke(
+                input={
+                    "user_input": user_input,
+                    "images": base64_images
+                }
+            )
+
+            logger.info(f"Generated post content: {result}")
             logger.info(f"Post generation cost: {cb.total_cost}")
 
-            return self.parser.parse(str(result.content)), cb.total_cost
+            return result, cb.total_cost
 
     async def save_uploaded_images(self, images: List[UploadFile]) -> List[str]:
         logger.info(f"Starting to save {len(images)} uploaded images")

@@ -5,12 +5,13 @@ from app.services.post_generation import PostGenerationService
 from app.core.security import get_api_key
 from typing import Annotated
 import time
-import asyncio
+from langsmith import traceable
 
 router = APIRouter()
 post_generation_service = PostGenerationService()
 
 
+@traceable
 @router.post("/generate-post/", response_model=PostGenerationResponse, operation_id="GeneratePost")
 async def generate_post(
     images: Annotated[List[UploadFile], File()],

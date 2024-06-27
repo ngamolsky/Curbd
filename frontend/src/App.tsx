@@ -23,45 +23,61 @@ function App() {
     description: string;
     hashtags: string[];
   } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const processedImages = await Promise.all(
-        Array.from(e.target.files).map(async (file) => {
-          if (file.size > MAX_IMAGE_SIZE) {
-            return await compressImage(file);
-          }
-          return file;
-        })
-      );
-      setImages((prevImages) => [...prevImages, ...processedImages]);
+      try {
+        const processedImages = await Promise.all(
+          Array.from(e.target.files).map(async (file) => {
+            if (file.size > MAX_IMAGE_SIZE) {
+              return await compressImage(file);
+            }
+            return file;
+          })
+        );
+        setImages((prevImages) => [...prevImages, ...processedImages]);
 
-      // Generate thumbnails
-      const newThumbnails = await Promise.all(
-        processedImages.map((file) => URL.createObjectURL(file))
-      );
-      setThumbnails((prevThumbnails) => [...prevThumbnails, ...newThumbnails]);
+        // Generate thumbnails
+        const newThumbnails = await Promise.all(
+          processedImages.map((file) => URL.createObjectURL(file))
+        );
+        setThumbnails((prevThumbnails) => [
+          ...prevThumbnails,
+          ...newThumbnails,
+        ]);
+      } catch (err) {
+        setError("Error processing images. Please try again.");
+        console.error("Error processing images:", err);
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const response = await generatePost({
-      formData: {
-        images: images,
-        user_input: userInput,
-      },
-    });
+    setError(null);
+    try {
+      const response = await generatePost({
+        formData: {
+          images: images,
+          user_input: userInput,
+        },
+      });
 
-    const post = response.post;
+      const post = response.post;
 
-    setGeneratedPost({
-      title: post.title,
-      description: post.description,
-      hashtags: post.hashtags,
-    });
-    setIsLoading(false);
+      setGeneratedPost({
+        title: post.title,
+        description: post.description,
+        hashtags: post.hashtags,
+      });
+    } catch (err) {
+      setError("Error generating post. Please try again.");
+      console.error("Error generating post:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -69,6 +85,7 @@ function App() {
     setUserInput("");
     setThumbnails([]);
     setGeneratedPost(null);
+    setError(null);
   };
 
   return (
@@ -76,6 +93,7 @@ function App() {
       <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center text-gray-800 dark:text-white">
         Curbd
       </h1>
+
       {!generatedPost ? (
         <form
           onSubmit={handleSubmit}
@@ -134,9 +152,9 @@ function App() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || images.length === 0}
             className={`w-full py-3 px-4 rounded-md text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out ${
-              isLoading
+              isLoading || images.length === 0
                 ? "bg-blue-300 text-white cursor-not-allowed"
                 : "bg-blue-500 text-white hover:bg-blue-600"
             }`}
@@ -194,6 +212,15 @@ function App() {
           >
             Reset
           </button>
+        </div>
+      )}
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-4"
+          role="alert"
+        >
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
         </div>
       )}
     </div>
